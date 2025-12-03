@@ -1,0 +1,104 @@
+# Pre-commit hooks for CodeArchaeologist
+# Install: pip install pre-commit
+# Setup: pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: mixed-line-ending
+
+  # Python formatting
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3.11
+        files: ^backend/
+
+  # Python linting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        files: ^backend/
+
+  # Python import sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+        files: ^backend/
+
+  # Python type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.7.1
+    hooks:
+      - id: mypy
+        files: ^backend/
+        additional_dependencies: [types-all]
+        args: [--ignore-missing-imports]
+
+  # Security - Detect secrets
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package-lock.json
+
+  # Security - Python security linting
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        args: ["-c", "pyproject.toml"]
+        files: ^backend/
+        exclude: ^backend/tests/
+
+  # Prevent committing .env files
+  - repo: local
+    hooks:
+      - id: check-env-files
+        name: Check for .env files
+        entry: bash -c 'if git diff --cached --name-only | grep -E "\.env$|\.env\.local$"; then echo "ERROR: Attempting to commit .env file! Use .env.example instead."; exit 1; fi'
+        language: system
+        pass_filenames: false
+
+  # Check for API keys in code
+  - repo: local
+    hooks:
+      - id: check-api-keys
+        name: Check for hardcoded API keys
+        entry: bash -c 'if git diff --cached | grep -iE "(api_key|apikey|api-key|secret_key|secretkey|secret-key|password|token|access_token|accesstoken|access-token)\s*=\s*[\"'\''][^\"'\'']+[\"'\'']"; then echo "ERROR: Possible hardcoded API key detected!"; exit 1; fi'
+        language: system
+        pass_filenames: false
+
+# Configuration for specific tools
+exclude: |
+  (?x)^(
+      .*\.min\.js|
+      .*\.min\.css|
+      node_modules/|
+      \.next/|
+      __pycache__/|
+      \.pytest_cache/|
+      \.git/|
+      \.venv/|
+      venv/|
+      dist/|
+      build/
+  )$

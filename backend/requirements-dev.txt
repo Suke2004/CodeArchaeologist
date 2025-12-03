@@ -1,0 +1,37 @@
+# Development dependencies for CodeArchaeologist backend
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-mock>=3.12.0
+pytest-xdist>=3.5.0  # Parallel test execution
+
+# Code Quality
+black>=23.12.0  # Code formatting
+ruff>=0.1.8  # Fast linting
+mypy>=1.7.0  # Type checking
+isort>=5.13.0  # Import sorting
+
+# Security
+bandit>=1.7.5  # Security linting
+safety>=2.3.5  # Dependency vulnerability scanning
+pip-audit>=2.6.1  # Audit pip packages
+
+# Documentation
+sphinx>=7.2.6  # Documentation generation
+sphinx-rtd-theme>=2.0.0  # ReadTheDocs theme
+
+# Development Tools
+ipython>=8.18.0  # Enhanced Python shell
+ipdb>=0.13.13  # IPython debugger
+watchdog>=3.0.0  # File system monitoring
+
+# Pre-commit Hooks
+pre-commit>=3.6.0  # Git pre-commit hooks
+
+# Load Testing
+locust>=2.20.0  # Load testing framework
+
+# All production dependencies
+-r requirements.txt
