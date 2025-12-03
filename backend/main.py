@@ -14,7 +14,9 @@ from services.repository_ingester import get_ingester
 from database import get_db, init_db, check_db_connection
 from models.repository import LegacyRepo, RepoStatus
 from models.analysis import AnalysisResult
+from dotenv import load_dotenv
 
+load_dotenv()
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

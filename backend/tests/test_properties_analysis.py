@@ -18,19 +18,17 @@ from tests.test_generators import pip_requirements, file_paths
 class TestFileScannerProperties:
     """Property-based tests for file scanner."""
     
-    @pytest.fixture
-    def scanner(self):
-        """Create scanner instance."""
-        return FileScanner()
-    
     @given(extension=st.sampled_from(['.py', '.js', '.ts', '.jsx', '.tsx']))
     @settings(max_examples=20)
-    def test_code_files_are_always_analyzed(self, scanner, extension):
+    def test_code_files_are_always_analyzed(self, extension):
         """
         Property: Code files with valid extensions are always selected for analysis
         
         For any code file extension, should_analyze_file returns True.
         """
+        # Create fresh scanner for each test
+        scanner = FileScanner()
+        
         # Create a temporary file path
         file_path = Path(f"test{extension}")
         
@@ -39,12 +37,15 @@ class TestFileScannerProperties:
     
     @given(dirname=st.sampled_from(['node_modules', '__pycache__', '.git', 'venv']))
     @settings(max_examples=10)
-    def test_ignored_dirs_are_always_ignored(self, scanner, dirname):
+    def test_ignored_dirs_are_always_ignored(self, dirname):
         """
         Property: Ignored directories are always skipped
         
         For any ignored directory name, should_ignore_dir returns True.
         """
+        # Create fresh scanner for each test
+        scanner = FileScanner()
+        
         dir_path = Path(dirname)
         
         # Property: Ignored dirs should always be ignored
@@ -58,12 +59,15 @@ class TestFileScannerProperties:
         )
     )
     @settings(max_examples=20)
-    def test_statistics_total_equals_file_count(self, scanner, files):
+    def test_statistics_total_equals_file_count(self, files):
         """
         Property: Statistics total matches actual file count
         
         For any list of files, statistics total should equal list length.
         """
+        # Create fresh scanner for each test
+        scanner = FileScanner()
+        
         from services.file_scanner import FileInfo
         
         # Create FileInfo objects
@@ -86,19 +90,17 @@ class TestFileScannerProperties:
 class TestDependencyExtractorProperties:
     """Property-based tests for dependency extractor."""
     
-    @pytest.fixture
-    def extractor(self):
-        """Create extractor instance."""
-        return DependencyExtractor()
-    
     @given(requirement=pip_requirements())
     @settings(max_examples=30)
-    def test_requirements_parsing_extracts_package_name(self, extractor, requirement):
+    def test_requirements_parsing_extracts_package_name(self, requirement):
         """
         Property: Requirements parsing always extracts a package name
         
         For any valid requirement string, parsing should extract a name.
         """
+        # Create fresh extractor for each test
+        extractor = DependencyExtractor()
+        
         # Create temporary requirements.txt
         with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
             f.write(requirement)
@@ -126,12 +128,15 @@ class TestDependencyExtractorProperties:
         )
     )
     @settings(max_examples=20)
-    def test_statistics_counts_match_dependency_list(self, extractor, deps):
+    def test_statistics_counts_match_dependency_list(self, deps):
         """
         Property: Dependency statistics match actual counts
         
         For any list of dependencies, statistics should match list length.
         """
+        # Create fresh extractor for each test
+        extractor = DependencyExtractor()
+        
         from services.dependency_extractor import Dependency
         
         # Create Dependency objects

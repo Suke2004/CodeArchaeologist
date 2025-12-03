@@ -9,6 +9,9 @@ from sqlalchemy.pool import NullPool
 from contextlib import contextmanager
 from typing import Generator
 import logging
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from models.base import Base
 
@@ -17,11 +20,18 @@ logger = logging.getLogger(__name__)
 # Get database URL from environment
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+# Allow tests to run without DATABASE_URL by using a test database
 if not DATABASE_URL:
-    raise ValueError(
-        "DATABASE_URL environment variable is not set. "
-        "Please add your Neon Postgres connection string to backend/.env"
-    )
+    # Check if we're in test mode
+    if os.getenv("PYTEST_CURRENT_TEST"):
+        # Use SQLite in-memory database for tests
+        DATABASE_URL = "sqlite:///:memory:"
+        logger.warning("Running in test mode with in-memory SQLite database")
+    else:
+        raise ValueError(
+            "DATABASE_URL environment variable is not set. "
+            "Please add your Neon Postgres connection string to backend/.env"
+        )
 
 # Create engine
 # For Neon Postgres, we use NullPool to avoid connection pooling issues with serverless

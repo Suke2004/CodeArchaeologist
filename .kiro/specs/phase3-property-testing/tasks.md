@@ -44,29 +44,29 @@
     - Ensure internal consistency (percentages sum to 100%)
     - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-- [ ] 3. Implement repository ingestion property tests
-  - [ ] 3.1 Write property test for invalid URL rejection
+- [x] 3. Implement repository ingestion property tests
+  - [x] 3.1 Write property test for invalid URL rejection
     - **Property 1: Invalid URL Rejection**
     - **Validates: Requirements 2.1**
     - Use `generate_invalid_url()` to create test cases
     - Verify all invalid URLs are rejected
     - Check error messages are appropriate
 
-  - [ ] 3.2 Write property test for valid URL acceptance
+  - [x] 3.2 Write property test for valid URL acceptance
     - **Property 2: Valid URL Acceptance**
     - **Validates: Requirements 2.2**
     - Use `generate_git_url()` to create test cases
     - Verify all valid URLs pass validation
     - No exceptions should be raised
 
-  - [ ] 3.3 Write property test for metadata extraction
+  - [x] 3.3 Write property test for metadata extraction
     - **Property 3: Metadata Extraction Completeness**
     - **Validates: Requirements 2.3**
     - Mock repository cloning to avoid network calls
     - Verify all required fields are present
     - Check field types are correct
 
-  - [ ] 3.4 Write property test for network error handling
+  - [x] 3.4 Write property test for network error handling
     - **Property 4: Network Error Handling**
     - **Validates: Requirements 2.4**
     - Mock network errors (timeout, connection refused)

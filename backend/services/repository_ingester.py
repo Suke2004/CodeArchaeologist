@@ -28,8 +28,11 @@ class RepositoryIngester:
         r"^https?://github\.com/[\w\-]+/[\w\-\.]+/?$",
         r"^https?://gitlab\.com/[\w\-]+/[\w\-\.]+/?$",
         r"^https?://bitbucket\.org/[\w\-]+/[\w\-\.]+/?$",
+        r"^git://github\.com/[\w\-]+/[\w\-\.]+\.git$",
+        r"^git://gitlab\.com/[\w\-]+/[\w\-\.]+\.git$",
         r"^git@github\.com:[\w\-]+/[\w\-\.]+\.git$",
         r"^git@gitlab\.com:[\w\-]+/[\w\-\.]+\.git$",
+        r"^git@bitbucket\.org:[\w\-]+/[\w\-\.]+\.git$",
     ]
     
     def __init__(self, storage_dir: Optional[Path] = None):
