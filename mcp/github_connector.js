@@ -97,6 +97,9 @@ class GitHubMCPServer {
         this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
             const { name, arguments: args } = request.params;
             try {
+                if (!args) {
+                    throw new Error('Missing arguments for tool call');
+                }
                 if (name === 'cloneResurrectionTarget') {
                     const result = await this.cloneResurrectionTarget(args.url);
                     return {
