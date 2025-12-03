@@ -27,7 +27,16 @@ async def resurrect(code: str, target_lang: str) -> str:
     genai.configure(api_key=api_key)
     
     # Use Gemini Pro model
-    model = genai.GenerativeModel('gemini-pro')
+    # Try different model names in case of API changes
+    try:
+        model = genai.GenerativeModel('gemini-2.5-flash')
+    except Exception as e:
+        # Fallback to gemini-1.5-pro if gemini-pro doesn't work
+        try:
+            model = genai.GenerativeModel('gemini-2.5-pro')
+        except:
+            # Last resort: try models/gemini-pro
+            model = genai.GenerativeModel('models/gemini-pro')
     
     # System prompt for code modernization
     system_prompt = f"""You are an expert code refactorer and modernization specialist. 

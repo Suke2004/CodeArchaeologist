@@ -57,7 +57,8 @@ export default function Home() {
       const logsPromise = simulateLogs();
 
       // Fetch from backend
-      const response = await fetch('http://127.0.0.1:8000/analyze', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/analyze`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -135,6 +135,19 @@ npm run dev
 
 ## 🧪 Testing
 
+### Quick Connectivity Test
+```bash
+# Test frontend-backend connection
+python test_connectivity.py
+```
+
+### Test AI Connection
+```bash
+# Test Gemini API connection
+cd backend
+python test_ai_connection.py
+```
+
 ### Quick Backend Test
 ```bash
 cd backend
@@ -160,15 +173,25 @@ python test_detector.py
 If you get a 500 error when analyzing code:
 
 1. **Check backend logs** - Look at the terminal running uvicorn
-2. **Test the detector**:
+2. **Test AI connection**:
+   ```bash
+   cd backend
+   python test_ai_connection.py
+   ```
+3. **Test the detector**:
    ```bash
    cd backend
    python test_backend.py
    ```
-3. **Verify environment**:
+4. **Verify environment**:
    ```bash
    python setup_verify.py
    ```
+
+**Common AI Errors:**
+- `404 models/gemini-pro is not found` - API key issue or model name changed
+- Run `python backend/test_ai_connection.py` to diagnose
+- Check your API key at https://makersuite.google.com/app/apikey
 
 ### Backend Won't Start
 
