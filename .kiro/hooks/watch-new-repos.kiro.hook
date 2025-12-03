@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Watch for New Repositories",
+  "description": "Monitors the input_repos/ directory for new folders/repositories and automatically triggers the analyze_stack.py script to generate a migration_report.json file",
+  "version": "1",
+  "when": {
+    "type": "fileCreated",
+    "patterns": [
+      "input_repos/*"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A new repository has been added to the input_repos/ directory. Please:\n\n1. Create a file named watcher/agent_hooks.py with the following functionality:\n   - Use the watchdog library to monitor the input_repos/ directory\n   - Detect when a new folder/repo is added to this directory\n   - Automatically trigger the analyze_stack.py script (create a stub for this)\n   - Generate a migration_report.json file in the same directory as the new repo\n   \n2. Add a comprehensive comment section at the top of watcher/agent_hooks.py explaining:\n   - How to install and run the watcher\n   - How to hook this into the IDE's 'Run on Save' feature if available\n   - Configuration options and usage instructions\n\n3. Ensure the script follows modern Python standards:\n   - Use Python 3.11+ syntax\n   - Include type hints\n   - Use async/await where appropriate\n   - Follow the pathlib approach for file operations\n   - Include proper error handling\n   - Add logging for debugging\n\n4. Create the analyze_stack.py stub that will be called by the watcher\n\n5. Ensure the migration_report.json has a proper structure with:\n   - Repository name\n   - Analysis timestamp\n   - Detected technologies\n   - Modernization recommendations\n   - Security findings\n\nPlease implement this complete solution now."
+  }
+}
