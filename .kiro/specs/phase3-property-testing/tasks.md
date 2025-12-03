@@ -7,38 +7,38 @@
   - Verify Hypothesis runs with a simple test
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [-] 2. Create test data generators
-  - [ ] 2.1 Implement Git URL generators
+- [x] 2. Create test data generators
+  - [x] 2.1 Implement Git URL generators
     - Create `generate_git_url()` for valid URLs (https, git, ssh formats)
     - Create `generate_invalid_url()` for invalid URLs
     - Test that generated URLs match expected patterns
     - _Requirements: 7.1_
 
-  - [ ] 2.2 Implement Python code generator
+  - [x] 2.2 Implement Python code generator
     - Create `generate_python_code()` that produces parseable code
     - Use simple templates (function defs, imports, assignments)
     - Validate with ast.parse()
     - _Requirements: 7.2_
 
-  - [ ] 2.3 Implement dependency specification generators
+  - [x] 2.3 Implement dependency specification generators
     - Create `generate_dependency_spec()` for pip format (package==1.0.0)
     - Create generator for npm format ("package": "^1.0.0")
     - Create generator for poetry format (package = "^1.0.0")
     - _Requirements: 7.3_
 
-  - [ ] 2.4 Implement file tree generator
+  - [x] 2.4 Implement file tree generator
     - Create `generate_file_tree()` that produces valid directory structures
     - Include files with various extensions (.py, .js, .ts)
     - Include ignored directories (node_modules, __pycache__)
     - Ensure no invalid path characters
     - _Requirements: 7.4_
 
-  - [ ] 2.5 Implement repository metadata generator
+  - [x] 2.5 Implement repository metadata generator
     - Create `generate_repository_metadata()` with all required fields
     - Include default_branch, last_commit, size, etc.
     - _Requirements: 2.3_
 
-  - [ ] 2.6 Implement analysis result generator
+  - [x] 2.6 Implement analysis result generator
     - Create `generate_analysis_result()` with complete structure
     - Include languages, frameworks, issues, tech_debt
     - Ensure internal consistency (percentages sum to 100%)
