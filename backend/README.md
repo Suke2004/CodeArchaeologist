@@ -2,13 +2,15 @@
 
 FastAPI server for analyzing and modernizing legacy code repositories.
 
-## Features
+## ✨ Features
 
 - 🚀 FastAPI with async support
 - 🤖 Google Gemini AI integration for code modernization
+- 🗄️ Neon Postgres database with SQLAlchemy ORM
+- 📦 Real GitHub repository cloning with GitPython
 - 🔒 CORS configured for frontend integration
 - 📝 Type-safe with Pydantic models
-- 🧪 Mock mode for testing without API key
+- 🧪 Comprehensive test suite with pytest
 
 ## Setup
 

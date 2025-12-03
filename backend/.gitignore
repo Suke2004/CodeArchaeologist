@@ -158,6 +158,11 @@ ENV/
 env.bak/
 venv.bak/
 
+# CodeArchaeologist specific
+temp_repos/
+*.db
+*.sqlite
+
 # Spyder project settings
 .spyderproject
 .spyproject
