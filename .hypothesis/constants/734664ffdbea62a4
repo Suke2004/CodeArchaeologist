@@ -1,4 +1,0 @@
-# file: C:\Users\benny\VS codes\git\CodeArchaeologist\backend\services\file_scanner.py
-# hypothesis_version: 6.141.1
-
-[1000, '*', '.cjs', '.coverage', '.env', '.git', '.hg', '.idea', '.js', '.jsx', '.mjs', '.next', '.nuxt', '.py', '.pytest_cache', '.pyw', '.svn', '.ts', '.tsx', '.venv', '.vs', '.vscode', 'Pipfile', '__pycache__', 'bin', 'build', 'by_extension', 'by_language', 'config', 'coverage', 'dist', 'env', 'extension', 'htmlcov', 'javascript', 'language', 'node_modules', 'obj', 'package-lock.json', 'package.json', 'path', 'pnpm-lock.yaml', 'pyproject.toml', 'python', 'requirements.txt', 'setup.py', 'size', 'target', 'total_files', 'total_size', 'typescript', 'unknown', 'venv', 'yarn.lock']

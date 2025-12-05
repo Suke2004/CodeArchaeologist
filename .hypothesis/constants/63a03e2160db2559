@@ -1,4 +1,0 @@
-# file: C:\Users\benny\AppData\Roaming\Python\Python39\site-packages\pluggy\__init__.py
-# hypothesis_version: 6.141.1
-
-['HookCallError', 'HookCaller', 'HookImpl', 'HookRelay', 'HookimplMarker', 'HookimplOpts', 'HookspecMarker', 'HookspecOpts', 'PluggyWarning', 'PluginManager', 'Result', '__version__']
