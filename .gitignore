@@ -59,11 +59,16 @@ logs/
 htmlcov/
 .pytest_cache/
 .tox/
+.hypothesis/
 
 # Database
 *.db
 *.sqlite
 *.sqlite3
+
+# Temporary files
+backend/temp_repos/
+temp_repos/
 
 # OS
 Thumbs.db
