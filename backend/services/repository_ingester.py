@@ -58,12 +58,30 @@ class RepositoryIngester:
         if not url or not isinstance(url, str):
             return False
         
-        # Remove trailing slashes and .git
-        url = url.rstrip("/").rstrip(".git")
+        # Normalize URL for checking
+        normalized = url.rstrip("/")
+        if normalized.endswith(".git"):
+            normalized = normalized[:-4]
         
-        # Check against patterns
+        # Check against patterns (with and without .git)
         for pattern in self.GIT_URL_PATTERNS:
-            if re.match(pattern, url) or re.match(pattern, url + ".git"):
+            # Try exact match
+            if re.match(pattern, url):
+                return True
+            # Try normalized version
+            if re.match(pattern, normalized):
+                return True
+            # Try with .git appended
+            if re.match(pattern, normalized + ".git"):
+                return True
+            # Try with trailing slash
+            if re.match(pattern, normalized + "/"):
+                return True
+        
+        # Fallback: simple check for common Git hosting platforms
+        if any(host in url.lower() for host in ["github.com", "gitlab.com", "bitbucket.org"]):
+            # Basic structure check: should have owner/repo format
+            if re.search(r'[/:][\w\-]+/[\w\-\.]+', url):
                 return True
         
         return False
@@ -129,7 +147,10 @@ class RepositoryIngester:
         # Add token to URL if provided
         clone_url = url
         if github_token and "github.com" in url:
-            clone_url = url.replace("https://", f"https://{github_token}@")
+            # Strip whitespace and quotes from token
+            clean_token = github_token.strip().strip('"').strip("'")
+            if clean_token:
+                clone_url = url.replace("https://", f"https://{clean_token}@")
         
         try:
             logger.info(f"Cloning repository from {url} to {dest_path}")

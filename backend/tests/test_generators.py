@@ -6,6 +6,7 @@ Generates random valid data for testing.
 from hypothesis import strategies as st
 from hypothesis.strategies import composite
 import string
+import json
 
 
 # URL Generators
@@ -513,6 +514,201 @@ def file_paths(draw):
     parts[-1] += extension
     
     return '/'.join(parts)
+
+
+# Dependency File Content Generators
+@composite
+def generate_requirements_txt_content(draw):
+    """
+    Generate valid requirements.txt file content.
+    
+    Returns a string with multiple dependency lines in pip format.
+    """
+    num_deps = draw(st.integers(1, 20))
+    lines = []
+    
+    for _ in range(num_deps):
+        package = draw(st.text(
+            alphabet=string.ascii_lowercase + '-_',
+            min_size=3,
+            max_size=20
+        ).filter(lambda x: x[0] not in '-_' and x[-1] not in '-_'))
+        
+        major = draw(st.integers(0, 10))
+        minor = draw(st.integers(0, 20))
+        patch = draw(st.integers(0, 50))
+        
+        operator = draw(st.sampled_from(['==', '>=', '~=', '<=', '>']))
+        lines.append(f"{package}{operator}{major}.{minor}.{patch}")
+    
+    # Add some comments and blank lines for realism
+    if draw(st.booleans()):
+        lines.insert(0, "# Project dependencies")
+    if draw(st.booleans()):
+        lines.insert(len(lines) // 2, "")
+    
+    return '\n'.join(lines)
+
+
+@composite
+def generate_package_json_content(draw):
+    """
+    Generate valid package.json file content with dependencies and devDependencies.
+    
+    Returns a JSON string with both production and dev dependencies.
+    Ensures no duplicate package names between dependencies and devDependencies.
+    """
+    num_prod_deps = draw(st.integers(0, 15))
+    num_dev_deps = draw(st.integers(0, 15))
+    
+    dependencies = {}
+    dev_dependencies = {}
+    used_names = set()
+    
+    # Generate production dependencies
+    for _ in range(num_prod_deps):
+        # Keep trying until we get a unique name
+        attempts = 0
+        while attempts < 100:
+            name = draw(st.text(
+                alphabet=string.ascii_lowercase + '-',
+                min_size=3,
+                max_size=15
+            ).filter(lambda x: x[0] != '-' and x[-1] != '-'))
+            
+            if name not in used_names:
+                used_names.add(name)
+                break
+            attempts += 1
+        
+        if attempts >= 100:
+            continue  # Skip if we can't find a unique name
+        
+        major = draw(st.integers(0, 10))
+        minor = draw(st.integers(0, 20))
+        patch = draw(st.integers(0, 50))
+        prefix = draw(st.sampled_from(['^', '~', '']))
+        
+        dependencies[name] = f"{prefix}{major}.{minor}.{patch}"
+    
+    # Generate dev dependencies
+    for _ in range(num_dev_deps):
+        # Keep trying until we get a unique name
+        attempts = 0
+        while attempts < 100:
+            name = draw(st.text(
+                alphabet=string.ascii_lowercase + '-',
+                min_size=3,
+                max_size=15
+            ).filter(lambda x: x[0] != '-' and x[-1] != '-'))
+            
+            if name not in used_names:
+                used_names.add(name)
+                break
+            attempts += 1
+        
+        if attempts >= 100:
+            continue  # Skip if we can't find a unique name
+        
+        major = draw(st.integers(0, 10))
+        minor = draw(st.integers(0, 20))
+        patch = draw(st.integers(0, 50))
+        prefix = draw(st.sampled_from(['^', '~', '']))
+        
+        dev_dependencies[name] = f"{prefix}{major}.{minor}.{patch}"
+    
+    package_json = {
+        "name": draw(st.text(
+            alphabet=string.ascii_lowercase + '-',
+            min_size=3,
+            max_size=15
+        ).filter(lambda x: x[0] != '-' and x[-1] != '-')),
+        "version": f"{draw(st.integers(0, 5))}.{draw(st.integers(0, 20))}.{draw(st.integers(0, 50))}",
+    }
+    
+    if dependencies:
+        package_json["dependencies"] = dependencies
+    if dev_dependencies:
+        package_json["devDependencies"] = dev_dependencies
+    
+    return json.dumps(package_json, indent=2)
+
+
+@composite
+def generate_pyproject_toml_content(draw):
+    """
+    Generate valid pyproject.toml file content with dependencies.
+    
+    Returns a TOML string with dependencies in poetry format.
+    """
+    num_deps = draw(st.integers(1, 20))
+    
+    lines = [
+        "[tool.poetry]",
+        f'name = "test-project"',
+        f'version = "1.0.0"',
+        "",
+        "[tool.poetry.dependencies]",
+        'python = "^3.11"',
+    ]
+    
+    for _ in range(num_deps):
+        package = draw(st.text(
+            alphabet=string.ascii_lowercase + '-_',
+            min_size=3,
+            max_size=20
+        ).filter(lambda x: x[0] not in '-_' and x[-1] not in '-_'))
+        
+        major = draw(st.integers(0, 10))
+        minor = draw(st.integers(0, 20))
+        patch = draw(st.integers(0, 50))
+        prefix = draw(st.sampled_from(['^', '~', '']))
+        
+        lines.append(f'{package} = "{prefix}{major}.{minor}.{patch}"')
+    
+    return '\n'.join(lines)
+
+
+@composite
+def generate_malformed_json(draw):
+    """
+    Generate malformed JSON content for error testing.
+    
+    Returns invalid JSON strings that should fail parsing.
+    """
+    malformed_patterns = [
+        st.just('{"dependencies": {'),  # Missing closing braces
+        st.just('{"dependencies": {"package": "1.0.0"'),  # Missing closing braces
+        st.just('{dependencies: {"package": "1.0.0"}}'),  # Missing quotes on key
+        st.just('{"dependencies": {"package": 1.0.0}}'),  # Unquoted value
+        st.just('{"dependencies": {"package": "1.0.0",}}'),  # Trailing comma
+        st.just(''),  # Empty string
+        st.just('not json at all'),  # Plain text
+        st.just('{"dependencies": [1, 2, 3]}'),  # Wrong type for dependencies
+        st.just('null'),  # Null value
+        st.just('{"dependencies": null}'),  # Null dependencies
+    ]
+    return draw(st.one_of(*malformed_patterns))
+
+
+@composite
+def generate_malformed_toml(draw):
+    """
+    Generate malformed TOML content for error testing.
+    
+    Returns invalid TOML strings that should fail parsing.
+    """
+    malformed_patterns = [
+        st.just('[tool.poetry.dependencies\npackage = "1.0.0"'),  # Missing closing bracket
+        st.just('[tool.poetry.dependencies]\npackage = 1.0.0'),  # Unquoted value
+        st.just('[tool.poetry.dependencies]\npackage = "1.0.0'),  # Missing closing quote
+        st.just(''),  # Empty string
+        st.just('not toml at all'),  # Plain text
+        st.just('[tool.poetry.dependencies]\npackage'),  # Incomplete line
+        st.just('[tool.poetry.dependencies]\n= "1.0.0"'),  # Missing key
+        st.just('[[[invalid]]]'),  # Invalid section header
+    ]
+    return draw(st.one_of(*malformed_patterns))
 
 
 # Tests for generators themselves

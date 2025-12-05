@@ -4,7 +4,7 @@ Tests file scanning and dependency extraction properties.
 """
 
 import pytest
-from hypothesis import given, settings, assume
+from hypothesis import given, settings, assume, HealthCheck
 from hypothesis import strategies as st
 from pathlib import Path
 import tempfile
@@ -12,7 +12,7 @@ import os
 
 from services.file_scanner import FileScanner
 from services.dependency_extractor import DependencyExtractor
-from tests.test_generators import pip_requirements, file_paths
+from tests.test_generators import pip_requirements, file_paths, generate_analysis_result
 
 
 class TestFileScannerProperties:
@@ -152,7 +152,10 @@ class TestDependencyExtractorProperties:
         assert stats['prod_dependencies'] == len(deps)  # All are prod by default
 
 
-# Feature: code-archaeologist, Property 3: Analysis completeness
+# Feature: phase3-property-testing, Property 13: Language Percentage Summation
+# Feature: phase3-property-testing, Property 14: Analysis File Count Consistency
+# Feature: phase3-property-testing, Property 15: Issue File Path Validity
+# Feature: phase3-property-testing, Property 16: Technical Debt Grade Consistency
 class TestAnalysisCompletenessProperties:
     """Property-based tests for analysis completeness."""
     
@@ -179,6 +182,118 @@ class TestAnalysisCompletenessProperties:
         # (allowing for rounding errors)
         total_pct = python_pct + js_pct
         assert 99.0 <= total_pct <= 101.0
+    
+    @given(analysis_result=generate_analysis_result())
+    @settings(max_examples=100, suppress_health_check=[HealthCheck.too_slow])
+    def test_property_13_language_percentage_summation(self, analysis_result):
+        """
+        **Feature: phase3-property-testing, Property 13: Language Percentage Summation**
+        **Validates: Requirements 5.1**
+        
+        For any analysis result with detected languages, the sum of all language 
+        percentages should equal 100% (or 0% if no files were analyzed).
+        """
+        languages = analysis_result['languages']
+        
+        if len(languages) == 0:
+            # No languages detected - this is valid (0% case)
+            return
+        
+        # Calculate total percentage
+        total_percentage = sum(lang['percentage'] for lang in languages)
+        
+        # Property: Percentages should sum to 100% (with small tolerance for rounding)
+        assert abs(total_percentage - 100.0) < 0.1, \
+            f"Language percentages sum to {total_percentage}, expected 100.0"
+    
+    @given(analysis_result=generate_analysis_result())
+    @settings(max_examples=100, suppress_health_check=[HealthCheck.too_slow])
+    def test_property_14_analysis_file_count_consistency(self, analysis_result):
+        """
+        **Feature: phase3-property-testing, Property 14: Analysis File Count Consistency**
+        **Validates: Requirements 5.2**
+        
+        For any analysis result, the total_files field should equal the sum of 
+        file_count across all detected languages.
+        """
+        languages = analysis_result['languages']
+        total_files = analysis_result['total_files']
+        
+        # Calculate sum of file counts by language
+        sum_file_counts = sum(lang['file_count'] for lang in languages)
+        
+        # Property: Sum of file counts should equal total_files
+        assert sum_file_counts == total_files, \
+            f"Sum of file counts ({sum_file_counts}) does not equal total_files ({total_files})"
+    
+    @given(analysis_result=generate_analysis_result())
+    @settings(max_examples=100, suppress_health_check=[HealthCheck.too_slow])
+    def test_property_15_issue_file_path_validity(self, analysis_result):
+        """
+        **Feature: phase3-property-testing, Property 15: Issue File Path Validity**
+        **Validates: Requirements 5.3**
+        
+        For any issue detected in the analysis, the file path should be a valid 
+        relative path (no null bytes, no absolute paths, no path traversal).
+        """
+        issues = analysis_result['issues']
+        
+        for issue in issues:
+            file_path = issue['file']
+            
+            # Property 1: No absolute paths (Unix or Windows)
+            assert not file_path.startswith('/'), \
+                f"Issue has absolute Unix path: {file_path}"
+            assert not (len(file_path) > 1 and file_path[1] == ':'), \
+                f"Issue has absolute Windows path: {file_path}"
+            assert not file_path.startswith('\\'), \
+                f"Issue has absolute Windows path: {file_path}"
+            
+            # Property 2: No null bytes
+            assert '\x00' not in file_path, \
+                f"Issue has null byte in path: {repr(file_path)}"
+            
+            # Property 3: No path traversal
+            assert '..' not in file_path, \
+                f"Issue has path traversal: {file_path}"
+            
+            # Property 4: Path should not be empty
+            assert len(file_path) > 0, \
+                "Issue has empty file path"
+    
+    @given(analysis_result=generate_analysis_result())
+    @settings(max_examples=100, suppress_health_check=[HealthCheck.too_slow])
+    def test_property_16_technical_debt_grade_consistency(self, analysis_result):
+        """
+        **Feature: phase3-property-testing, Property 16: Technical Debt Grade Consistency**
+        **Validates: Requirements 5.4**
+        
+        For any analysis result with a maintainability score, the assigned grade 
+        should match the score according to the grading scale:
+        - A: 80-100
+        - B: 60-79
+        - C: 40-59
+        - D: 20-39
+        - F: 0-19
+        """
+        tech_debt = analysis_result['tech_debt']
+        score = tech_debt['maintainability_score']
+        grade = tech_debt['grade']
+        
+        # Property: Grade should match score according to grading scale
+        if score >= 80:
+            expected_grade = 'A'
+        elif score >= 60:
+            expected_grade = 'B'
+        elif score >= 40:
+            expected_grade = 'C'
+        elif score >= 20:
+            expected_grade = 'D'
+        else:
+            expected_grade = 'F'
+        
+        assert grade == expected_grade, \
+            f"Score {score} should be grade {expected_grade}, but got {grade}"
 
 
 if __name__ == "__main__":

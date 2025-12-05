@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl, Field
 from sqlalchemy.orm import Session
 import os
-from typing import Optional, Dict, List
+from typing import Optional
 import asyncio
 import uuid
 import logging
@@ -86,26 +86,44 @@ async def analyze_repository(request: RepoRequest, db: Session = Depends(get_db)
         
         # Extract repo info
         repo_info = ingester.extract_repo_info(request.url)
-        repo_id = str(uuid.uuid4())
         
-        # Create repository record
-        repo = LegacyRepo(
-            id=repo_id,
-            url=request.url,
-            name=repo_info["name"],
-            owner=repo_info["owner"],
-            user_id="anonymous",  # TODO: Add auth
-            status=RepoStatus.CLONING
-        )
-        db.add(repo)
-        db.commit()
+        # Check if repository already exists
+        existing_repo = db.query(LegacyRepo).filter(LegacyRepo.url == request.url).first()
         
-        logger.info(f"Created repository record: {repo_id}")
+        if existing_repo:
+            logger.info(f"Repository already exists: {existing_repo.id}")
+            
+            # If analysis is complete, return existing results
+            if existing_repo.status == RepoStatus.COMPLETE:
+                logger.info("Returning existing analysis results")
+                repo = existing_repo
+                repo_id = existing_repo.id
+            else:
+                # If previous analysis failed or is incomplete, restart
+                logger.info(f"Restarting analysis for repository in status: {existing_repo.status}")
+                repo = existing_repo
+                repo_id = existing_repo.id
+                repo.status = RepoStatus.CLONING
+                db.commit()
+        else:
+            # Create new repository record
+            repo_id = str(uuid.uuid4())
+            repo = LegacyRepo(
+                id=repo_id,
+                url=request.url,
+                name=repo_info["name"],
+                owner=repo_info["owner"],
+                user_id="anonymous",  # TODO: Add auth
+                status=RepoStatus.CLONING
+            )
+            db.add(repo)
+            db.commit()
+            logger.info(f"Created repository record: {repo_id}")
         
         # Clone repository
         try:
-            github_token = os.getenv("GITHUB_TOKEN")
-            repo_path = ingester.clone_repository(request.url, repo_id, github_token)
+            github_token = os.getenv("GITHUB_TOKEN", "").strip().strip('"').strip("'")
+            repo_path = ingester.clone_repository(request.url, repo_id, github_token if github_token else None)
             
             # Update status
             repo.status = RepoStatus.ANALYZING

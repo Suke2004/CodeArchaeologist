@@ -137,6 +137,121 @@ curl -X POST http://localhost:8000/analyze \
 curl http://localhost:8000/health
 ```
 
+### Running Tests
+
+#### Unit Tests
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=. --cov-report=html
+
+# Run specific test file
+pytest tests/test_legacy_detector.py -v
+```
+
+#### Property-Based Tests
+
+CodeArchaeologist uses [Hypothesis](https://hypothesis.readthedocs.io/) for property-based testing, which automatically generates hundreds of test cases to verify that system properties hold across all inputs.
+
+**Run property tests:**
+```bash
+# Run all property tests (100 examples each)
+pytest -m property
+
+# Run with verbose output and statistics
+pytest -m property --hypothesis-show-statistics -v
+
+# Run specific property test file
+pytest tests/test_properties_ingestion.py -v
+
+# Run with increased examples for thorough testing
+HYPOTHESIS_MAX_EXAMPLES=1000 pytest -m property
+```
+
+**What are Property Tests?**
+
+Property-based tests verify universal behaviors rather than specific examples:
+- **Unit Test**: "When I add task 'Buy milk', the list length increases by 1"
+- **Property Test**: "For ANY valid task, adding it increases the list length by 1"
+
+Hypothesis generates diverse inputs automatically, finding edge cases you might miss.
+
+**Example Property Test Output:**
+```
+tests/test_properties_ingestion.py::test_invalid_url_rejection PASSED
+  - Hypothesis generated 100 examples
+  - Smallest failing example (if any): shown automatically
+  - All invalid URLs correctly rejected ✓
+
+tests/test_properties_scanning.py::test_file_statistics_consistency PASSED
+  - Tested with 100 different directory structures
+  - File counts always sum correctly ✓
+```
+
+**Debugging Failed Properties:**
+
+When a property test fails, Hypothesis shows the minimal failing example:
+
+```python
+# Example failure output
+Falsifying example: test_url_validation(
+    url='http://github.com/user/repo.git\x00'  # Contains null byte
+)
+```
+
+To debug:
+1. Copy the failing example from the output
+2. Add it as a unit test for regression testing
+3. Fix the bug in the code
+4. Re-run the property test to verify the fix
+
+**Property Test Categories:**
+
+1. **Repository Ingestion** (`test_properties_ingestion.py`)
+   - URL validation across all formats
+   - Metadata extraction completeness
+   - Error handling consistency
+
+2. **File Scanning** (`test_properties_scanning.py`)
+   - File identification across directory structures
+   - Ignored directory exclusion
+   - Statistics consistency
+
+3. **Dependency Extraction** (`test_properties_extraction.py`)
+   - Parsing correctness for all formats
+   - Version constraint preservation
+   - Malformed file handling
+
+4. **Analysis Completeness** (`test_properties_analysis.py`)
+   - Language percentage summation
+   - File count consistency
+   - Technical debt grade accuracy
+
+5. **Data Persistence** (`test_properties_persistence.py`)
+   - Round-trip data preservation
+   - Timestamp handling
+   - JSON serialization correctness
+
+6. **Generator Validation** (`test_properties_generators.py`)
+   - Test data generator correctness
+   - Meta-tests for test infrastructure
+
+**Configuration:**
+
+Property test settings are in `pytest.ini`:
+```ini
+[tool:pytest]
+markers =
+    property: Property-based tests using Hypothesis
+
+[tool.hypothesis]
+max_examples = 100
+deadline = 5000
+verbosity = normal
+```
+
 ### API Documentation
 
 FastAPI provides automatic interactive documentation:
